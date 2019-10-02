@@ -128,3 +128,4 @@ config.ini
 
 # PyCharm
 .idea/
+.DS_Store
