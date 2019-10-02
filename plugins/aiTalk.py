@@ -1,4 +1,17 @@
+import configparser
+import requests
 from slackbot.bot import default_reply
+
+ini = configparser.ConfigParser()
+ini.read('./config.ini', 'UTF-8')
+
+
+@default_reply()
+def reply(message):
+    talk_api = A3RTTalk(ini['talk']['endpoint'], ini['talk']['token'])
+
+    text = message.body['text']
+    message.send(talk_api.talk(text))
 
 
 class A3RTTalk(object):
@@ -8,20 +21,9 @@ class A3RTTalk(object):
 
     def talk(self, text):
         response = self.fetch(text)
-        return response["results"][0]["reply"]
+        return response['results'][0]['reply']
 
     def fetch(self, text):
-        return {
-            'results': [
-                {'reply': "はいなんでしょう"}
-            ]
-        }
-
-
-@default_reply()
-def reply(message):
-    text = message.body['text']
-
-    talk_api = A3RTTalk("https://api.a3rt.recruit-tech.co.jp/talk/v1/smalltalk", "DZZD5nGrQ5PDZDeqHmw6BQOunH5yiRMs")
-    response = talk_api.talk(text)
-    message.send(response)
+        param = {'apikey': self.token, 'query': text}
+        response = requests.post(self.endpoint, param)
+        return response.json()
